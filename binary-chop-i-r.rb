@@ -1,4 +1,4 @@
-﻿require 'test/unit'
+require 'test/unit'
 
 # binary chop: itarative process, recursive calls
  
@@ -14,9 +14,14 @@ class TestClass < Test::Unit::TestCase
     middle = (top + bottom) / 2
     middle_num = array[middle]
     
-    return middle if middle_num == num
-    return chop_iter(num, array, middle + 1, top) if middle_num < num            
-    return chop_iter(num, array, bottom, middle - 1) if num < middle_num    
+    case
+    when middle_num == num then
+      middle
+    when middle_num < num then
+      chop_iter(num, array, middle + 1, top)
+    when num < middle_num then
+      chop_iter(num, array, bottom, middle - 1)
+    end
   end
   
   def test_chop
