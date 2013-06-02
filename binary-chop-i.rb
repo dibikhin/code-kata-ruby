@@ -14,9 +14,14 @@ class TestClass < Test::Unit::TestCase
       middle = (top + bottom) / 2
       middle_num = array[middle]
       
-      return middle if middle_num == num
-      bottom = middle + 1 if middle_num < num
-      top = middle - 1 if num < middle_num      
+      case 
+      when middle_num == num then
+        return middle
+      when middle_num < num then
+        bottom = middle + 1
+      when num < middle_num then
+        top = middle - 1
+      end
     end
   end
     
