@@ -22,7 +22,7 @@ class TestClass < Test::Unit::TestCase
       end
     end
 
-	  return -1
+    return -1
   end
     
   def test_chop
