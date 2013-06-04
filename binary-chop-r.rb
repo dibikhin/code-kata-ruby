@@ -16,7 +16,7 @@ end
 class TestClass < Test::Unit::TestCase
   def chop(num, array)
     return -1 if array.empty?
-	array.index!
+    array.index!
     return chop_recur(num, array)
   end    
   
@@ -25,7 +25,7 @@ class TestClass < Test::Unit::TestCase
 
     bottom, top, middle = 0, array.size - 1, nil    
 
-	middle = (top + bottom) / 2
+    middle = (top + bottom) / 2
     middle_num = array[middle][:value]
     
     case
@@ -77,3 +77,4 @@ class TestClass < Test::Unit::TestCase
 #    assert_equal(-1, chop(10_000_000, (0..9999999).to_a.select { |a| a % 2 == 1 }))
   end
 end
+  
