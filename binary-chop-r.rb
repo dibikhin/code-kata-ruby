@@ -1,30 +1,43 @@
 require 'test/unit'
 
-# binary chop: itarative version
+class Array
+  def get_arr(from, to)
+    from > to ? [] : self[from..to]
+  end
 
+  def index!
+    i = -1
+    self.map! { |n| i += 1; { :index => i, :value => n } }
+  end
+end
+
+# binary chop: recursive process, recursive calls
+ 
 class TestClass < Test::Unit::TestCase
   def chop(num, array)
     return -1 if array.empty?
-   
-    bottom, top, middle = 0, array.size - 1, nil
-    
-    while bottom <= top      
-      middle = (top + bottom) / 2
-      middle_num = array[middle]
-      
-      case 
-      when middle_num == num then
-        return middle
-      when middle_num < num then
-        bottom = middle + 1
-      when num < middle_num then
-        top = middle - 1
-      end
-    end
+	array.index!
+    return chop_recur(num, array)
+  end    
+  
+  def chop_recur(num, array)
+    return -1 if array.empty? 
 
-	return -1
-  end
+    bottom, top, middle = 0, array.size - 1, nil    
+
+	middle = (top + bottom) / 2
+    middle_num = array[middle][:value]
     
+    case
+    when middle_num == num then
+      array[middle][:index]
+    when middle_num < num then
+      chop_recur(num, array.get_arr(middle + 1, top))
+    when num < middle_num then
+      chop_recur(num, array.get_arr(bottom, middle - 1))
+    end
+  end
+  
   def test_chop
     assert_equal(-1, chop(3, []))
     assert_equal(-1, chop(3, [1]))
