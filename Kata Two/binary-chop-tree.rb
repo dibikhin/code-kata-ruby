@@ -1,40 +1,73 @@
-require 'test/unit'
+﻿require 'test/unit'
 
-class Array
-  def get_arr(from, to)
-    from > to ? [] : self[from..to]
+class Node
+  attr_accessor :left, :item, :right
+	
+  def initialize(left, item, right)
+    @left, @item, @right = left, item, right
   end
 
-  def index!
-    i = -1
-    self.map! { |n| i += 1; { :index => i, :value => n } }
+  def self.print(tree, indent)
+    if not tree.nil?
+      puts indent + tree.item[:value].to_s
+      print tree.left, indent + "\\--"    
+      print tree.right, indent + "\\--"
+    end
   end
 end
 
-# binary chop: recursive process, recursive calls
- 
+class Array
+  def index
+    i = -1
+    self.map do |n| 
+      i += 1
+      { :index => i, :value => n }
+    end
+  end
+
+  def to_tree
+   if self.empty?
+     nil
+   else
+     to_tree_iter(self, 0, self.count - 1) 
+   end
+  end
+  
+  private
+  def to_tree_iter(array, buttom, top)
+   if buttom > top
+     nil
+   else
+     middle = (buttom + top) / 2
+     item = array[middle]
+     Node.new(
+       to_tree_iter(array, buttom, middle -1), 
+       item,
+       to_tree_iter(array, middle + 1, top))
+   end
+  end
+end
+
+# binary chop tree 
 class TestClass < Test::Unit::TestCase
   def chop(num, array)
     return -1 if array.empty?
-    array.index!
-    return chop_recur(num, array)
+    return chop_tree(num, array.index.to_tree)
   end    
   
-  def chop_recur(num, array)
-    return -1 if array.empty? 
-
-    bottom, top, middle = 0, array.size - 1, nil    
-
-    middle = (top + bottom) / 2
-    middle_num = array[middle][:value]
+  def chop_tree(num, tree)
+    return -1 if tree.nil?
     
+    middle = tree.item[:index]
+    middle_num = tree.item[:value]
+
     case
-    when middle_num == num then
-      array[middle][:index]
-    when middle_num < num then
-      chop_recur(num, array.get_arr(middle + 1, top))
-    when num < middle_num then
-      chop_recur(num, array.get_arr(bottom, middle - 1))
+    when middle_num == num
+      middle
+    when middle_num < num
+      chop_tree(num, tree.right)
+    when num < middle_num
+      chop_tree(num, tree.left)
     end
   end
   
@@ -74,7 +107,5 @@ class TestClass < Test::Unit::TestCase
     assert_equal(-1, chop(6, [1, 3, 5, 7, 9, 11]))
     
     assert_equal(-1, chop(4, [1, 3, 5, 7, 9, 11, 13]))
-#    assert_equal(-1, chop(10_000_000, (0..9999999).to_a.select { |a| a % 2 == 1 }))
   end
 end
-  
