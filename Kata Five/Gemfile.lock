@@ -1,0 +1,12 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    multi_json (1.10.1)
+    murmurhash3 (0.1.4)
+
+PLATFORMS
+  x64-mingw32
+
+DEPENDENCIES
+  multi_json (~> 1.10)
+  murmurhash3
