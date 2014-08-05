@@ -37,7 +37,7 @@ class BloomFilter
 		end
 
 		def contains?(word_hash)
-			true
+			false
 		end
 	end
 
