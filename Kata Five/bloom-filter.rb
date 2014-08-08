@@ -1,17 +1,22 @@
 ﻿require 'multi_json'
-require 'murmurhash3'
+# require 'murmurhash3'
+require '.\digestfnv'
 
 class BloomFilter
 	class BitMap
 		def initialize(file_name = nil)
 			if file_name.nil?
 				@bitmap = {}
-				('a'..'z').each do |chr| 
-					@bitmap[chr] = {} 
-					(2..22).each do |num|
-						@bitmap[chr][num] = [0, 0, 0, 0]
-					end
+				(2..22).each do |size| 
+					@bitmap[size] = 0 					
 				end
+				# @bitmap = {}
+				# ('a'..'z').each do |chr| 
+					# @bitmap[chr] = {} 
+					# (2..22).each do |num|
+						# @bitmap[chr][num] = [0, 0, 0, 0]
+					# end
+				# end
 			else
 				@bitmap = load(file_name)
 			end
@@ -32,33 +37,36 @@ class BloomFilter
 		end
 		
 		# @bitmap & word_hash looks like ???
-		def add(word_hash, word_size, first_letter)			
-			(0..3).each do |ix| 
-				@bitmap[first_letter][word_size][ix] = @bitmap[first_letter][word_size][ix] | word_hash[ix]
-			end
-			#ix = (word_size % 4) - 1
-			# @bitmap[first_letter][ix] = @bitmap[first_letter][ix] | word_hash[ix]
-			# # @bitmap[ix] = @bitmap[ix] | word_hash[ix]
-			# # #@bitmap[0] = @bitmap[0] | word_hash[0]
-			# # #@bitmap[1] = @bitmap[1] | word_hash[1]
-			# # #@bitmap[2] = @bitmap[2] | word_hash[2]
-			# # #@bitmap[3] = @bitmap[3] | word_hash[3]
+		def add(word_hash, word_size, first_letter)	
+			@bitmap[word_size] = @bitmap[word_size] | word_hash
+			# (0..3).each do |ix| 
+				# @bitmap[first_letter][word_size][ix] = @bitmap[first_letter][word_size][ix] | word_hash[ix]
+			# end
+			# #ix = (word_size % 4) - 1
+			# # @bitmap[first_letter][ix] = @bitmap[first_letter][ix] | word_hash[ix]
+			# # # @bitmap[ix] = @bitmap[ix] | word_hash[ix]
+			# # # #@bitmap[0] = @bitmap[0] | word_hash[0]
+			# # # #@bitmap[1] = @bitmap[1] | word_hash[1]
+			# # # #@bitmap[2] = @bitmap[2] | word_hash[2]
+			# # # #@bitmap[3] = @bitmap[3] | word_hash[3]
 		end
 
 		def contains?(word_hash, word_size, first_letter)
-			word_size = word_size.to_s # due to deserialization issues
-			contains = false
-			(0..3).each do |ix| 				
-				contains = @bitmap[first_letter][word_size][ix] == @bitmap[first_letter][word_size][ix] | word_hash[ix]
-			end
-			contains
-			# ix = (word_size % 4) - 1
-			# @bitmap[first_letter][ix] == @bitmap[first_letter][ix] | word_hash[ix]
-			# # @bitmap[ix] == @bitmap[ix] | word_hash[ix]
-			# # #@bitmap[0] == @bitmap[0] | word_hash[0] &&
-			# # #@bitmap[1] == @bitmap[1] | word_hash[1] &&
-			# # #@bitmap[2] == @bitmap[2] | word_hash[2] &&
-			# # #@bitmap[3] == @bitmap[3] | word_hash[3] &&
+			word_size = word_size.to_s # due to deserialization issue
+			@bitmap[word_size] == @bitmap[word_size] | word_hash
+			# word_size = word_size.to_s # due to deserialization issue
+			# contains = false
+			# (0..3).each do |ix| 				
+				# contains = @bitmap[first_letter][word_size][ix] == @bitmap[first_letter][word_size][ix] | word_hash[ix]
+			# end
+			# contains
+			# # ix = (word_size % 4) - 1
+			# # @bitmap[first_letter][ix] == @bitmap[first_letter][ix] | word_hash[ix]
+			# # # @bitmap[ix] == @bitmap[ix] | word_hash[ix]
+			# # # #@bitmap[0] == @bitmap[0] | word_hash[0] &&
+			# # # #@bitmap[1] == @bitmap[1] | word_hash[1] &&
+			# # # #@bitmap[2] == @bitmap[2] | word_hash[2] &&
+			# # # #@bitmap[3] == @bitmap[3] | word_hash[3] &&
 		end
 	
 		def load(file_name)
@@ -73,8 +81,9 @@ class BloomFilter
 	end
 
 	# private
-	def self.compute_hash(word)
-		MurmurHash3::V128.str_hash(word)
+	def self.compute_hash(str)
+		# MurmurHash3::V128.str_hash(str)
+		Digest::FNV.calculate(str, 1024)
 	end
 
 	def self.load_dictionary(dictionary_file_name)
