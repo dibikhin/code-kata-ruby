@@ -1,6 +1,6 @@
 ﻿require 'multi_json'
 #require 'murmurhash3'
-require '.\digestfnv'
+#require '.\digestfnv'
 
 class BloomFilter
 	class BitMap
@@ -9,7 +9,7 @@ class BloomFilter
 				@bitmap = {}
 				('a'..'z').each do |chr| 
 					@bitmap[chr] = {} 
-					(1..22).each do |num|
+					(0..25).each do |num|
 						@bitmap[chr][num] = 0
 					end
 				end
@@ -34,12 +34,21 @@ class BloomFilter
 		
 		# @bitmap & word_hash looks like ???
 		def add(word_hash, word_size, first_letter)
-			@bitmap[first_letter][word_size] = @bitmap[first_letter][word_size] | word_hash
+			('a'..'z').each do |chr|					
+				(0..25).each do |pos|
+					@bitmap[chr][pos] = word_hash[chr][pos]
+				end
+			end
 		end
 
 		def contains?(word_hash, word_size, first_letter)
-			word_size = word_size.to_s # due to deserialization issue			
-			@bitmap[first_letter][word_size] == @bitmap[first_letter][word_size] | word_hash
+			res = []
+			('a'..'z').each do |chr|					
+				(0..25).each do |pos|
+					res[pos] = @bitmap[chr][pos.to_s] == word_hash[chr][pos]
+				end
+			end
+			res.all? { |res| res == true }
 		end
 	
 		def load(file_name)
@@ -56,7 +65,17 @@ class BloomFilter
 	# private
 	def self.compute_hash(str)
 		#MurmurHash3::V128.str_hash(str)
-		Digest::FNV.calculate(str, 1024)
+		#Digest::FNV.calculate(str, 1024)
+		hash = {}
+		('a'..'z').each do |chr| 
+			hash[chr] = {} 
+			(0..25).each do |pos|
+				hash[chr][pos] = 0
+			end
+		end
+		pos = 0	
+		str.each_char{ |chr| hash[chr][pos] = 1; pos += 1; }
+		hash
 	end
 
 	def self.load_dictionary(dictionary_file_name)
