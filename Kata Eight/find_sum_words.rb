@@ -1,15 +1,30 @@
 ﻿require 'pp'
 
-dictionary_file_name = ARGV[0]
-
-sum_words = []
-words = File.open(dictionary_file_name, 'r').read.lines.uniq.map { |w| w.strip }
-words.each do |word|
-	words.each do |a_word|			
-		if words.include?(word + a_word)
-			sum_words << { (word + a_word) => [word, a_word] } 
-		end
-	end
+def	read_dictionary(dictionary_file_name)
+	File.open(dictionary_file_name, 'r').read.lines.uniq.map { |word| word.strip }
 end
 
-pp sum_words
+# con + vex => convex
+# here + by => hereby
+def make_composition(one, another)
+	{ (one + another) => [one, another] }
+end
+
+def find_compositions(words)
+	counter = 1
+	compositions = []
+	words.each do |first_word|
+		words.each do |second_word|
+			counter =+ counter + 1
+			compositions << make_composition(first_word, second_word) if words.include?(first_word + second_word)
+		end
+	end
+	puts counter
+	compositions
+end
+
+puts Time.now
+dictionary_file_name = ARGV[0]
+words = read_dictionary(dictionary_file_name)
+pp find_compositions(words)
+puts Time.now
