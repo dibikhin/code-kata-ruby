@@ -7,8 +7,8 @@ end
 
 # con + vex => convex
 # here + by => hereby
-def add_composition(one, another, compositions)
-	compositions[one + another] = [one, another]
+def add_composition(permutation, compositions)
+	compositions[permutation[0] + permutation[1]] = permutation
 end
 
 def find_compositions(words)
@@ -20,24 +20,27 @@ def find_compositions(words)
 			# add_composition(first_word, second_word, compositions) if words.include?(first_word + second_word)
 		# end
 	# end
-	words.select{ |word| word.size <= 5 }.combination(2).each do |perm|
+	RubyProf.start
+	short_words = words.select{ |word| word.size <= 5 }
+	long_words = words.select{ |word| word.size >= 5 }
+	short_words.combination(2).each do |perm|
 		counter =+ counter + 1
-		add_composition(perm[0], perm[1], compositions) if words.include?(perm[0] + perm[1])
-		add_composition(perm[1], perm[0], compositions) if words.include?(perm[1] + perm[0])
+		left_right = perm[0] + perm[1]
+		right_left = perm[1] + perm[0]
+		add_composition(perm, compositions) if long_words.any? { |word| word == left_right || word == right_left }
 	end
+	puts RubyProf::FlatPrinter.new(RubyProf.stop).print(STDOUT)
 	puts counter
 	compositions
 end
 
-RubyProf.start
-
 puts Time.now
 dictionary_file_name = ARGV[0]
-words = read_dictionary(dictionary_file_name)
-pp find_compositions(words.first(100))
-puts Time.now
 
-puts RubyProf::FlatPrinter.new(RubyProf.stop).print(STDOUT)
+words = read_dictionary(dictionary_file_name)
+pp find_compositions(words.first(500))
+
+puts Time.now
 
 # {1=>2}
 # {2=>23}
