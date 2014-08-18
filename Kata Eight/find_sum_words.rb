@@ -8,12 +8,12 @@ end
 # con + vex => convex
 # here + by => hereby
 def add_composition(permutation, compositions)
-	compositions[permutation[0] + permutation[1]] = permutation
+	compositions << [permutation[0], permutation[1]]
 end
 
 def find_compositions(words)
 	counter = 1
-	compositions = {}
+	compositions = []
 	# words.select{ |word| word.size <= 5 }.each do |first_word|
 		# words.select{ |word| word.size <= 5 }.each do |second_word|
 			# counter =+ counter + 1
@@ -21,13 +21,19 @@ def find_compositions(words)
 		# end
 	# end
 	RubyProf.start
-	short_words = words.select{ |word| word.size <= 5 }
-	long_words = words.select{ |word| word.size >= 5 }
+	short_words = words #.select{ |word| word.size <= 5 }
+	long_words = words# .select{ |word| word.size >= 5 }
 	short_words.combination(2).each do |perm|
-		counter =+ counter + 1
+		counter += 1
 		left_right = perm[0] + perm[1]
 		right_left = perm[1] + perm[0]
-		add_composition(perm, compositions) if long_words.any? { |word| word == left_right || word == right_left }
+		# add_composition(perm, compositions) if long_words.any? { |word| word == left_right || word == right_left }
+		long_words.each do |word|
+			if word == left_right || word == right_left
+				add_composition(perm, compositions)
+				break
+			end
+		end
 	end
 	puts RubyProf::FlatPrinter.new(RubyProf.stop).print(STDOUT)
 	puts counter
