@@ -1,5 +1,9 @@
-﻿class TestPrice < Test::Unit::TestCase
+﻿require 'minitest/autorun'
+require './checkout'
 
+class TestPrice < Minitest::Test
+  RULES = ""
+	
   def price(goods)
     co = CheckOut.new(RULES)
     goods.split(//).each { |item| co.scan(item) }
@@ -34,3 +38,11 @@
     co.scan("B");  assert_equal(175, co.total)
   end
 end
+
+# Item  Unit      Special
+# 		Price     Price
+# --------------------------
+# A     50       3 for 130
+# B     30       2 for 45
+# C     20
+# D     15
