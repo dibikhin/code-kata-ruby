@@ -11,11 +11,18 @@ class CheckOut
 
 	def initialize(rules)
 		@rules = parse_rules(rules)
+		@total = 0
+		@sku_list = []
 	end
 	
 	def scan(sku)
 		@sku_list << sku
 		@total = compute_total(@rules, @sku_list)
+	end
+	
+	def compute_total(rules, sku_list)
+		@sku_list.sort!
+		stats = @sku_list.chars.group_by(&:chr).map { |k, v| { k => v.size } }
 	end
 	
 	private
@@ -28,8 +35,8 @@ class CheckOut
 		rule_b_spec_price.set_size, rule_b_spec_price.price_per_set = 2, 45
 		rule_b.sku, rule_b.unit_price, rule_b.special_price = 'B', 30, rule_b_spec_price
 
-		rule_с = Rule.new
-		rule_с.sku, rule_с.unit_price = 'C', 20
+		rule_c = Rule.new
+		rule_c.sku, rule_c.unit_price = 'C', 20
 
 		rule_d = Rule.new
 		rule_d.sku, rule_d.unit_price = 'D', 15
