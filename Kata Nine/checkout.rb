@@ -22,18 +22,15 @@ class CheckOut
 	
 	def compute_total(rules, sku_list)
 		total = 0
-		stats = @sku_list.chars.group_by(&:chr).map { |k, v| { k => v.size } }
+		stats = @sku_list.chars.group_by(&:chr).map { |chr, all_chars| { chr => all_chars.size } }
 		stats.each do |stat|
 			stat.each do |sku, count|
-				@rules.each do |rule|
-					if rule.sku == sku
-						if !rule.special_price.nil?
-							total += count / rule.special_price.set_size * rule.special_price.price_per_set
-							total += count % rule.special_price.set_size * rule.unit_price
-						else
-							total += count * rule.unit_price
-						end
-					end
+				rule = @rules[sku]
+				if !rule.special_price.nil?
+					total += count / rule.special_price.set_size * rule.special_price.price_per_set
+					total += count % rule.special_price.set_size * rule.unit_price
+				else
+					total += count * rule.unit_price
 				end
 			end
 		end
@@ -56,7 +53,7 @@ class CheckOut
 		rule_d = Rule.new
 		rule_d.sku, rule_d.unit_price = 'D', 15
 
-		[rule_a, rule_b, rule_c, rule_d]
+		{ rule_a.sku => rule_a, rule_b.sku => rule_b, rule_c.sku => rule_c, rule_d.sku => rule_d }
 	end
 end
 
