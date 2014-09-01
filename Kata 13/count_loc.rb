@@ -10,3 +10,5 @@ loc_count = 0
 #str.chars.each { |chr| loc_count += 1 if chr == "\n" }
 str.lines.each { |line| loc_count += 1 if !line.strip.start_with?("//", "*/", "/*") }
 puts loc_count
+
+#.gsub(/\/\*(\n|.)*\*\//, '').strip
