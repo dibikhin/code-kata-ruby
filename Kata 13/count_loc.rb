@@ -1,12 +1,13 @@
 ﻿def delete_block_comments(str)
-	str.gsub(/\/\*(\n|.)*?\*\//, '')   # '?' is ungreedy quantifier and does all work 
+	str.gsub(/\/\*(\n|.)*?\*\//, '')	# '?' is ungreedy quantifier and does all work 
 end
 
 def count_loc(str)
 	loc_count = 0
 	str_wo_block_comments = delete_block_comments(str)
-	puts str_wo_block_comments
-	str_wo_block_comments.lines.each { |line| loc_count += 1 if !line.strip.start_with?("//") && line.strip != ''  }
+	str_wo_block_comments.lines.each do |line| 
+		loc_count += 1 if !line.strip.start_with?("//") && line.strip != ''
+	end
 	loc_count
 end
 
@@ -31,5 +32,5 @@ complex_comments = ' /*****
 
 }'
 
-puts count_loc(simple_comments)
-puts count_loc(complex_comments)
+puts count_loc(simple_comments)		# => 3
+puts count_loc(complex_comments)	# => 5
