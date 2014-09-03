@@ -1,12 +1,12 @@
 ﻿require 'pp'
 
 def split_and_clear_text(txt)
-	%w(I wish I may I wish I might)
+#	%w(I wish I may I wish I might)
+	txt.split
 end
 
 def load_text(file_name)
-	# File.open(file_name, 'r').read
-	""
+	File.open(file_name, 'r').read	
 end
 
 def find_trigrams(txt)
@@ -23,10 +23,17 @@ def find_trigrams(txt)
 	trigrams
 end
 
-def compose_story(trigrams)
-	pp trigrams
+def compose_story_recur(trigrams, new_story, depth, max_depth)
+	return new_story if depth > max_depth
 end
 
-txt = load_text('story.txt')
+def compose_story(trigrams)
+	# pp trigrams
+	new_story, depth, max_depth = '', 0, 10
+	compose_story_recur(trigrams, new_story, depth, max_depth)
+	new_story
+end
+
+txt = load_text('sample.txt')
 trigrams = find_trigrams(txt)
 compose_story(trigrams)
