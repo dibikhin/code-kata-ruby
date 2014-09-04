@@ -1,8 +1,8 @@
 ﻿require 'pp'
 
 def split_and_clear_text(txt)
-	#%w(I wish I may I wish I might)
-	txt.split
+	# %w(I wish I may I wish I might)
+	txt.scan(/\w+/).map { |word| word.downcase }
 end
 
 def load_text(file_name)
@@ -26,20 +26,24 @@ def find_trigrams(txt)
 end
 
 def compose_story_recur(trigrams, current_key, new_story, depth, max_depth)
-	depth += 1
-	return new_story if depth > max_depth
 	trigram_values = trigrams[current_key]
-	value_pos = trigram_values.size > 1 ? Random.new.rand(trigram_values.size - 1) : 0
-	new_story << "%s " % [trigram_values[value_pos]]
-	# new_story << "%s %s %s " % [current_key[0], current_key[1], trigram_values[0]]
+	return new_story if depth > max_depth || trigram_values.nil?
+	#value_pos = trigram_values.size > 1 ? Random.new.rand(trigram_values.size - 1) : 0
+	value_pos = 0
+	if depth == 0
+		new_story << "%s %s %s " % [current_key[0], current_key[1], trigram_values[value_pos]]
+	else
+		new_story << "%s " % [trigram_values[value_pos]]
+	end
+	trigrams[current_key] = trigram_values - [trigram_values[value_pos]]
+	depth += 1
 	compose_story_recur(trigrams, [current_key[1], trigram_values[0]], new_story, depth, max_depth)
 end
 
 def compose_story(trigrams, max_depth = 10)
-	# pp trigrams
-	trigrams.select { |k, v| !v.nil? }
 	new_story, depth = '', 0
-	starting_key = trigrams.keys[Random.new.rand(trigrams.keys.size - 1)]
+	rand_key_ix = Random.new.rand(trigrams.keys.size - 1)
+	starting_key = trigrams.keys[rand_key_ix]
 	compose_story_recur(trigrams, starting_key, new_story, depth, max_depth)
 	new_story
 end
