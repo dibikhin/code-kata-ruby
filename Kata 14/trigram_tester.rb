@@ -28,22 +28,29 @@ end
 def compose_story_recur(trigrams, current_key, new_story, depth, max_depth)
 	trigram_values = trigrams[current_key]
 	return new_story if depth > max_depth || trigram_values.nil?
-	#value_pos = trigram_values.size > 1 ? Random.new.rand(trigram_values.size - 1) : 0
-	value_pos = 0
-	if depth == 0
-		new_story << "%s %s %s " % [current_key[0], current_key[1], trigram_values[value_pos]]
+	third_word = trigram_values[0]
+	new_story << "%s " % [third_word]
+	trigram_values.delete_at(trigram_values.index(third_word))
+	if trigram_values.empty?
+		trigrams.delete(current_key)
 	else
-		new_story << "%s " % [trigram_values[value_pos]]
+		trigrams[current_key] = trigram_values
 	end
-	trigrams[current_key] = trigram_values - [trigram_values[value_pos]]
 	depth += 1
-	compose_story_recur(trigrams, [current_key[1], trigram_values[0]], new_story, depth, max_depth)
+	compose_story_recur(trigrams, [current_key[1], third_word], new_story, depth, max_depth)
+end
+
+def init_story(trigrams)
+	rand_key_ix = Random.new.rand(trigrams.keys.size)
+	starting_key = trigrams.keys[rand_key_ix]
+	new_story = ''
+	new_story << "%s %s %s " % [starting_key[0], starting_key[1], starting_key[2]]
+	return starting_key, new_story
 end
 
 def compose_story(trigrams, max_depth = 10)
 	new_story, depth = '', 0
-	rand_key_ix = Random.new.rand(trigrams.keys.size - 1)
-	starting_key = trigrams.keys[rand_key_ix]
+	starting_key, new_story = init_story(trigrams) 
 	compose_story_recur(trigrams, starting_key, new_story, depth, max_depth)
 	new_story
 end
@@ -54,3 +61,4 @@ text_file_name = ARGV[1]
 txt = load_text(text_file_name)
 trigrams = find_trigrams(txt)
 puts compose_story(trigrams, max_depth)
+#File.open('new_story.txt', 'w') { |file| file.write(compose_story(trigrams, max_depth)) } 
