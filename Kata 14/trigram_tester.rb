@@ -2,7 +2,8 @@
 
 def split_and_clear_text(txt)
 	# %w(I wish I may I wish I might)
-	txt.scan(/\w+/).map { |word| word.downcase }
+	#txt.scan(/\w+/).map { |word| word.downcase }
+	txt.gsub(/[,;\'\"\:]/,'').split(/\s/)
 end
 
 def load_text(file_name)
