@@ -3,7 +3,7 @@
 def split_and_clear_text(txt)
 	# %w(I wish I may I wish I might)
 	#txt.scan(/\w+/).map { |word| word.downcase }
-	txt.gsub(/[,;\'\"\:]/,'').split(/\s/)
+	txt.gsub(/[,;\"\:]/,'').gsub(/--/,' ').split(/\s/)
 end
 
 def load_text(file_name)
@@ -62,4 +62,3 @@ text_file_name = ARGV[1]
 txt = load_text(text_file_name)
 trigrams = find_trigrams(txt)
 puts compose_story(trigrams, max_depth)
-#File.open('new_story.txt', 'w') { |file| file.write(compose_story(trigrams, max_depth)) } 
