@@ -1,5 +1,6 @@
 ﻿require 'minitest/autorun'
 require 'pp'
+require 'set'
 
 class Dependencies
 	def initialize
@@ -11,20 +12,16 @@ class Dependencies
 	end
 
 	def dependencies_for(key)
-		deps_chain = []
-		deps_chain += deps_for_recur(key, deps_chain, key)
-		deps_chain.uniq.sort
+		deps_chain = recur_deps_for(key, Set.new)
+		(deps_chain - [key]).to_a.sort
 	end
 
-	def deps_for_recur(key, deps_chain, starting_key)
+	def recur_deps_for(key, deps_chain)
 		key_deps = @all_deps[key]
+		return deps_chain if deps_chain.include?(key)
+		deps_chain += [key]
 		return deps_chain if key_deps.nil?
-		return deps_chain if key_deps.include?(starting_key)
-		deps_chain += key_deps
-		p key_deps, deps_chain
-		key_deps.each do |dep| 
-			deps_chain += deps_for_recur(dep, deps_chain, starting_key)
-		end
+		key_deps.each { |dep| deps_chain += recur_deps_for(dep, deps_chain) }
 		deps_chain
 	end
 end
@@ -64,12 +61,12 @@ class TestRack < Minitest::Test
 		dep = Dependencies.new
 
 		dep.add_direct('A', %w{ B D } )
-		dep.add_direct('B', %w{ X } )
-		dep.add_direct('X', %w{ A } )
-		dep.add_direct('D', %w{ E } )
+		dep.add_direct('B', %w{ X   } )
+		dep.add_direct('X', %w{ A   } )
+		dep.add_direct('D', %w{ E   } )
 		
 		assert_equal( %w{ B D E X }, dep.dependencies_for('A'))
-		assert_equal( %w{ A X }, dep.dependencies_for('B'))
+		assert_equal( %w{ A D E X }, dep.dependencies_for('B'))
 		assert_equal( %w{ A B D E }, dep.dependencies_for('X'))
 	end
 
@@ -77,12 +74,25 @@ class TestRack < Minitest::Test
 		dep = Dependencies.new
 
 		dep.add_direct('A', %w{ B D } )
-		dep.add_direct('B', %w{ X } )
+		dep.add_direct('B', %w{ X 	} )
+		dep.add_direct('X', %w{ W B } )
+		dep.add_direct('D', %w{ E 	} )
+		
+		assert_equal( %w{ B D E W X }, dep.dependencies_for('A'))
+		assert_equal( %w{ W X       }, dep.dependencies_for('B'))
+		assert_equal( %w{ B W       }, dep.dependencies_for('X'))
+	end
+
+	def test_simple_loops_multi_deps_3
+		dep = Dependencies.new
+
+		dep.add_direct('A', %w{ B D } )
+		dep.add_direct('B', %w{ X 	} )
 		dep.add_direct('X', %w{ A B } )
-		dep.add_direct('D', %w{ E } )
+		dep.add_direct('D', %w{ E 	} )
 		
 		assert_equal( %w{ B D E X }, dep.dependencies_for('A'))
-		assert_equal( %w{ A X }, dep.dependencies_for('B'))
+		assert_equal( %w{ A D E X }, dep.dependencies_for('B'))
 		assert_equal( %w{ A B D E }, dep.dependencies_for('X'))
 	end
 end
