@@ -1,5 +1,6 @@
 ﻿require 'minitest/autorun'
 require 'pp'
+require 'ruby-prof'
 require 'set'
 
 class Dependencies
@@ -19,10 +20,28 @@ class Dependencies
 	def recur_deps_for(key, deps_chain)
 		key_deps = @all_deps[key]
 		return deps_chain if deps_chain.include?(key)
-		deps_chain += [key]
+		deps_chain.add(key)
 		return deps_chain if key_deps.nil?
-		key_deps.each { |dep| deps_chain += recur_deps_for(dep, deps_chain) }
+		key_deps.each do |dep|
+		#	deps_chain += recur_deps_for(dep, deps_chain)
+			recur_deps_for(dep, deps_chain).each { |key_dep| deps_chain.add(key_dep) unless deps_chain.include?(key_dep) }
+		end
 		deps_chain
+	end
+	
+	def self.get_rand_deps(deps_range, limit)
+		deps = Set.new
+		random = Random.new
+		deps_range_arr = deps_range.to_a
+		random_ix = random.rand(deps_range_arr.size)
+		random.rand(limit).times { deps += [deps_range_arr[random_ix]] }
+		deps
+	end
+
+	def self.generate_deps(keys_range, deps_range, deps_limit)
+		dep = Dependencies.new
+		keys_range.each { |key| dep.add_direct(key, get_rand_deps(deps_range, deps_limit)) }
+		dep
 	end
 end
 
@@ -94,5 +113,17 @@ class TestRack < Minitest::Test
 		assert_equal( %w{ B D E X }, dep.dependencies_for('A'))
 		assert_equal( %w{ A D E X }, dep.dependencies_for('B'))
 		assert_equal( %w{ A B D E }, dep.dependencies_for('X'))
+	end
+
+	# def test_generator_for_chars
+		# dep = Dependencies.generate_deps('A'..'M', 'A'..'Z', 7)
+		# ('A'..'D').each { |key| p key, dep.dependencies_for(key) }
+	# end
+
+	def test_generator_for_fixnums
+		dep = Dependencies.generate_deps(0..10000, 0..20000, 7)
+		RubyProf.start
+		(0..10000).each { |key| dep.dependencies_for(key) }
+		puts RubyProf::FlatPrinter.new(RubyProf.stop).print(STDOUT)
 	end
 end
