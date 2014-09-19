@@ -13,28 +13,27 @@ class Dependencies
 	end
 
 	def dependencies_for(key)
-		deps_chain = recur_deps_for(key, Set.new)
-		(deps_chain - [key]).to_a.sort
+		deps_chain = recur_deps_for(key, Hash.new)
+		deps_chain.keys.select { |dep| dep != key }
 	end
 
 	def recur_deps_for(key, deps_chain)
 		key_deps = @all_deps[key]
 		return deps_chain if deps_chain.include?(key)
-		deps_chain.add(key)
+		deps_chain[key] = nil # using Hash like Set
 		return deps_chain if key_deps.nil?
 		key_deps.each do |dep|
-		#	deps_chain += recur_deps_for(dep, deps_chain)
-			recur_deps_for(dep, deps_chain).each { |key_dep| deps_chain.add(key_dep) unless deps_chain.include?(key_dep) }
+			deps_chain.merge(recur_deps_for(dep, deps_chain))#.keys.each { |key_dep| deps_chain[key_dep] = nil }
 		end
 		deps_chain
 	end
 	
 	def self.get_rand_deps(deps_range, limit)
-		deps = Set.new
+		deps = Hash.new
 		random = Random.new
 		deps_range_arr = deps_range.to_a
 		random_ix = random.rand(deps_range_arr.size)
-		random.rand(limit).times { deps += [deps_range_arr[random_ix]] }
+		random.rand(limit).times { deps[deps_range_arr[random_ix]] = nil }
 		deps
 	end
 
@@ -56,12 +55,12 @@ class TestRack < Minitest::Test
 		dep.add_direct('E', %w{ F   } )
 		dep.add_direct('F', %w{ H   } )
 
-		assert_equal( %w{ B C E F G H },   dep.dependencies_for('A'))
-		assert_equal( %w{ C E F G H },     dep.dependencies_for('B'))
-		assert_equal( %w{ G },             dep.dependencies_for('C'))
-		assert_equal( %w{ A B C E F G H }, dep.dependencies_for('D'))
-		assert_equal( %w{ F H },           dep.dependencies_for('E'))
-		assert_equal( %w{ H },             dep.dependencies_for('F'))
+		assert_equal( %w{ B C E F G H },   dep.dependencies_for('A').sort)
+		assert_equal( %w{ C E F G H },     dep.dependencies_for('B').sort)
+		assert_equal( %w{ G },             dep.dependencies_for('C').sort)
+		assert_equal( %w{ A B C E F G H }, dep.dependencies_for('D').sort)
+		assert_equal( %w{ F H },           dep.dependencies_for('E').sort)
+		assert_equal( %w{ H },             dep.dependencies_for('F').sort)
 	end
 
 	def test_simple_loop
@@ -71,9 +70,9 @@ class TestRack < Minitest::Test
 		dep.add_direct('B', %w{ X } )
 		dep.add_direct('X', %w{ A } )
 		
-		assert_equal( %w{ B X }, dep.dependencies_for('A'))
-		assert_equal( %w{ A X }, dep.dependencies_for('B'))
-		assert_equal( %w{ A B }, dep.dependencies_for('X'))
+		assert_equal( %w{ B X }, dep.dependencies_for('A').sort)
+		assert_equal( %w{ A X }, dep.dependencies_for('B').sort)
+		assert_equal( %w{ A B }, dep.dependencies_for('X').sort)
 	end
 
 	def test_simple_loops_multi_deps
@@ -84,9 +83,9 @@ class TestRack < Minitest::Test
 		dep.add_direct('X', %w{ A   } )
 		dep.add_direct('D', %w{ E   } )
 		
-		assert_equal( %w{ B D E X }, dep.dependencies_for('A'))
-		assert_equal( %w{ A D E X }, dep.dependencies_for('B'))
-		assert_equal( %w{ A B D E }, dep.dependencies_for('X'))
+		assert_equal( %w{ B D E X }, dep.dependencies_for('A').sort)
+		assert_equal( %w{ A D E X }, dep.dependencies_for('B').sort)
+		assert_equal( %w{ A B D E }, dep.dependencies_for('X').sort)
 	end
 
 	def test_simple_loops_multi_deps_2
@@ -97,9 +96,9 @@ class TestRack < Minitest::Test
 		dep.add_direct('X', %w{ W B } )
 		dep.add_direct('D', %w{ E 	} )
 		
-		assert_equal( %w{ B D E W X }, dep.dependencies_for('A'))
-		assert_equal( %w{ W X       }, dep.dependencies_for('B'))
-		assert_equal( %w{ B W       }, dep.dependencies_for('X'))
+		assert_equal( %w{ B D E W X }, dep.dependencies_for('A').sort)
+		assert_equal( %w{ W X       }, dep.dependencies_for('B').sort)
+		assert_equal( %w{ B W       }, dep.dependencies_for('X').sort)
 	end
 
 	def test_simple_loops_multi_deps_3
@@ -110,9 +109,9 @@ class TestRack < Minitest::Test
 		dep.add_direct('X', %w{ A B } )
 		dep.add_direct('D', %w{ E 	} )
 		
-		assert_equal( %w{ B D E X }, dep.dependencies_for('A'))
-		assert_equal( %w{ A D E X }, dep.dependencies_for('B'))
-		assert_equal( %w{ A B D E }, dep.dependencies_for('X'))
+		assert_equal( %w{ B D E X }, dep.dependencies_for('A').sort)
+		assert_equal( %w{ A D E X }, dep.dependencies_for('B').sort)
+		assert_equal( %w{ A B D E }, dep.dependencies_for('X').sort)
 	end
 
 	# def test_generator_for_chars
@@ -127,3 +126,20 @@ class TestRack < Minitest::Test
 		puts RubyProf::FlatPrinter.new(RubyProf.stop).print(STDOUT)
 	end
 end
+
+	# def dependencies_for(key)
+		# deps_chain = recur_deps_for(key, Set.new)
+		# (deps_chain - [key]).to_a.sort
+	# end
+
+	# def recur_deps_for(key, deps_chain)
+		# key_deps = @all_deps[key]
+		# return deps_chain if deps_chain.include?(key)
+		# deps_chain.add(key)
+		# return deps_chain if key_deps.nil?
+		# key_deps.each do |dep|
+		# #	deps_chain += recur_deps_for(dep, deps_chain)
+			# recur_deps_for(dep, deps_chain).each { |key_dep| deps_chain.add(key_dep) unless deps_chain.include?(key_dep) }
+		# end
+		# deps_chain
+	# end
