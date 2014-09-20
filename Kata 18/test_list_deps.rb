@@ -23,7 +23,7 @@ class Dependencies
 		deps_chain[key] = nil # using Hash like Set
 		return deps_chain if key_deps.nil?
 		key_deps.each do |dep|
-			deps_chain.merge(recur_deps_for(dep, deps_chain))#.keys.each { |key_dep| deps_chain[key_dep] = nil }
+			deps_chain.merge(recur_deps_for(dep, deps_chain))
 		end
 		deps_chain
 	end
@@ -126,20 +126,3 @@ class TestRack < Minitest::Test
 		puts RubyProf::FlatPrinter.new(RubyProf.stop).print(STDOUT)
 	end
 end
-
-	# def dependencies_for(key)
-		# deps_chain = recur_deps_for(key, Set.new)
-		# (deps_chain - [key]).to_a.sort
-	# end
-
-	# def recur_deps_for(key, deps_chain)
-		# key_deps = @all_deps[key]
-		# return deps_chain if deps_chain.include?(key)
-		# deps_chain.add(key)
-		# return deps_chain if key_deps.nil?
-		# key_deps.each do |dep|
-		# #	deps_chain += recur_deps_for(dep, deps_chain)
-			# recur_deps_for(dep, deps_chain).each { |key_dep| deps_chain.add(key_dep) unless deps_chain.include?(key_dep) }
-		# end
-		# deps_chain
-	# end
