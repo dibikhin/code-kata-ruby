@@ -2,59 +2,66 @@
 
 void Main()
 {
-	TestDeps.TestBasic();
-	TestDeps.TestGen();
+//	TestDeps.TestBasic();
+	//TestDeps.TestCharGen();
+	TestDeps.TestIntGen();
 }
 
 // Define other methods and classes here
 
-class Deps {
-	Dictionary<char, List<char>> _allDeps = new Dictionary<char, List<char>>();
+class Deps <T> where T : IComparable<T> {
+	Dictionary<T, List<T>> _allDeps = new Dictionary<T, List<T>>();
 	
-	public Dictionary<char, List<char>> AllDeps {
+	public Dictionary<T, List<T>> AllDeps {
 		get { return _allDeps; }
 	}
 	
-	public void Add(char key, List<char> deps) {
+	public void Add(T key, List<T> deps) {
 		_allDeps.Add(key, deps);
 	}
 	
-	public List<char> DepsFor(char key) {
-		var asdf = RecurDepsFor(key, new HashSet<char>()).Where(d => d != key).ToList();
-		asdf.Sort();
-		return asdf;
+	public List<T> DepsFor(T key) {
+		var depsForKey = RecurDepsFor(key, new HashSet<T>()).Where(d => d.CompareTo(key) < 0 || d.CompareTo(key) > 0);
+		return depsForKey.Distinct().OrderBy(d => d).ToList();
 	}
 	
-	private HashSet<char> RecurDepsFor(char key, HashSet<char> depsChain) {
-		List<char> keyDeps;
+	private IEnumerable<T> RecurDepsFor(T key, HashSet<T> depsChain) {
+		List<T> keyDeps;
+		IEnumerable<T> ienum = null;
 		_allDeps.TryGetValue(key, out keyDeps);
 		if(depsChain.Contains(key)) return depsChain;
 		depsChain.Add(key);
 		if(keyDeps == null) return depsChain;
 		foreach(var kd in keyDeps)
-			depsChain.UnionWith(RecurDepsFor(kd, depsChain));
-		return depsChain;
+			ienum = depsChain.Union(RecurDepsFor(kd, depsChain));
+		return ienum == null ? depsChain : ienum;
 	}
 	
-	private static List<char> GenRandDeps() {
-		var deps = new HashSet<char>();
-		var rand = new Random();
-		var randIx = rand.Next(10);
-		var depsRangeArr = "POIUYTREWQ".ToCharArray();
-		rand.Next(5).Times(() => deps.Add(depsRangeArr[randIx]));
+	private static List<T> GenRandDeps(Random rand, T[] depsRangeArr) {
+		var deps = new HashSet<T>();
+		int randIx;
+		rand.Next(1, depsRangeArr.Length / 2).Times(() => { 
+			randIx = rand.Next(1, depsRangeArr.Length); 
+			deps.Add(depsRangeArr[randIx]);
+		});
 		return deps.ToList();
 	}
 	
-	public static Deps GenDeps() {
-		var deps = new Deps();
-		"POIUYTREWQ".ToCharArray().ToList().ForEach(key => deps.Add(key, GenRandDeps()));
+	public static Deps<T> GenDeps(T[] keySet, T[] depSet) {
+		var deps = new Deps<T>();
+		var rand = new Random();
+		keySet.ToList().ForEach(key => { 
+			var randDeps = GenRandDeps(rand, depSet);
+			randDeps.RemoveAll(d => d.CompareTo(key) == 0);
+			deps.Add(key, randDeps);
+		});
 		return deps;
 	}
 }
 
 class TestDeps {
 	public static void TestBasic() {
-		var deps = new Deps();
+		var deps = new Deps<char>();
 		deps.Add('A', new List<char> { 'B', 'C' } );
 		deps.Add('B', new List<char> { 'C', 'E' } );
 		deps.Add('C', new List<char> { 'G',     } );
@@ -70,8 +77,16 @@ class TestDeps {
  		deps.DepsFor('F').SequenceEqual(new List<char> { 'H' }).Dump();
 	}
 	
-	public static void TestGen() {
-		Deps.GenDeps().AllDeps.Dump();
+	public static void TestCharGen() {
+		var deps = Deps<char>.GenDeps("POIUYTREWQ".ToCharArray(), "POIUYTREWQ".ToCharArray());
+		deps.DepsFor('P').Dump();
+		deps.AllDeps.Dump();
+	}
+	
+	public static void TestIntGen() {
+		var deps = Deps<int>.GenDeps(Enumerable.Range(1, 5000).ToArray(), Enumerable.Range(1, 10000).ToArray());
+		deps.DepsFor(2);//.Dump();
+		//deps.AllDeps.Dump();
 	}
 }
 
