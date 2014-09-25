@@ -1,11 +1,11 @@
 <Query Kind="FSharpProgram" />
 
-let words = ["raster ";"monste";" raters	";"Sartre";"booste";"starer";"highas"]
+let readWordsFile filePath = System.IO.File.ReadLines(filePath)
 let findAnagrams list =
-	let sortedChars word = 
-		(word:string).Trim().ToLower() |> Seq.sort |> String.Concat
+	let cleanStr word = (word:string).Trim()
+	let sortedChars word = (word:string).ToLower() |> Seq.sort |> String.Concat
 	list
+	|> Seq.map cleanStr
 	|> Seq.groupBy sortedChars
-	|> Map.ofSeq
 
-Dump (findAnagrams words)
+Dump (findAnagrams (readWordsFile @"C:\Users\Roman\My Projects\code-kata-ruby\Kata Six\wordsEn.txt"))
