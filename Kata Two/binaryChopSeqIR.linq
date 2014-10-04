@@ -1,10 +1,9 @@
 <Query Kind="FSharpProgram" />
 
-// than WTF? is (lst:List<int>) w/ 'L' in '...List...'
 let chop num lst =
 	let rec chopIter n ls bottom top =
 		let mid = (top + bottom) / 2
-		let mid_n = (ls: _ list).[mid]
+		let mid_n = Seq.nth mid ls
 		
 		match n with
 		| n when bottom > top -> -1
@@ -13,10 +12,11 @@ let chop num lst =
 		| _ -> mid
 	
 	match lst with
-	| [] -> -1
-	| _	 -> chopIter num lst 0 (List.length(lst) - 1)
+	| lst when Seq.isEmpty lst -> -1
+	| _	 -> chopIter num lst 0 (Seq.length(lst) - 1)
 
 //chop 123456 [1..23456789] |> Dump
+//chop 123456 [|1..23456789|] |> Dump
 
 chop 3 []  |> Dump
 chop 3 [1] |> Dump
