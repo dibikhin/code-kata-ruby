@@ -1,19 +1,19 @@
 <Query Kind="FSharpProgram" />
 
 let chop num lst =
-	let rec chopIter n ls bottom top =
+	let rec chopIter n ls bottom top cnt =
 		let mid = (top + bottom) / 2
 		let mid_n = Seq.nth mid ls
 		
 		match n with
-		| n when bottom > top -> -1
-		| n when n > mid_n -> chopIter n ls (mid + 1) top
-		| n when n < mid_n -> chopIter n ls bottom (mid - 1)
-		| _ -> mid
+		| n when bottom > top -> (-1, cnt)
+		| n when n > mid_n -> chopIter n ls (mid + 1) top (cnt + 1)
+		| n when n < mid_n -> chopIter n ls bottom (mid - 1) (cnt + 1)
+		| _ -> (mid, cnt)
 	
 	match lst with
-	| lst when Seq.isEmpty lst -> -1
-	| _	 -> chopIter num lst 0 (Seq.length(lst) - 1)
+	| lst when Seq.isEmpty lst -> (-1, 0)
+	| _	 -> chopIter num lst 0 (Seq.length(lst) - 1) 0
 
 //chop 123456 [1..23456789] |> Dump
 //chop 123456 [|1..23456789|] |> Dump

@@ -1,4 +1,5 @@
-﻿require 'test/unit'
+﻿require "minitest/autorun"
+require 'pp'
 
 class Node
   attr_accessor :left, :item, :right
@@ -9,9 +10,9 @@ class Node
 
   def self.print(tree, indent)
     if not tree.nil?
-      puts indent + tree.item[:value].to_s
-      print tree.left, indent + "\\--"    
-      print tree.right, indent + "\\--"
+      puts indent + tree.item.to_s
+      print tree.left, indent + "  "    
+      print tree.right, indent + "  "
     end
   end
 end
@@ -49,7 +50,7 @@ class Array
 end
 
 # binary chop tree 
-class TestClass < Test::Unit::TestCase
+class TestClass < Minitest::Test
   def chop(num, array)
     return -1 if array.empty?
     return chop_tree(num, array.index.to_tree)
@@ -72,6 +73,9 @@ class TestClass < Test::Unit::TestCase
   end
   
   def test_chop
+	p Node.print([3,4,5,6,7,8,9].to_tree, "  ")
+	#pp [3,4,5,6,7,8,9].to_tree
+
     assert_equal(-1, chop(3, []))
     assert_equal(-1, chop(3, [1]))
     assert_equal(-1, chop(3, [4]))
